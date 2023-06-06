@@ -7,11 +7,11 @@ class ResultsView extends View {
   _errorMessage = 'No recipes found for your query! Please try again.';
   _message = '';
 
-  _generateMarkp() {
-    return this._data.map(this._generateMarkpPreview).join('');
+  _generateMarkup() {
+    return this._data.map(this._generateMarkupPreview).join('');
   }
 
-  _generateMarkpPreview(result) {
+  _generateMarkupPreview(result) {
     return `
         <li class="preview">
             <a class="preview__link " href="#${result.id}">
