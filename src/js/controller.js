@@ -8,9 +8,9 @@ import 'regenerator-runtime/runtime'; // for polyfilling async await
 
 ///////////////////////////////////////
 
-if (module.hot) {
-  module.hot.accept();
-}
+// if (module.hot) {
+//   module.hot.accept();
+// }
 
 const controlRecipes = async function () {
   try {
@@ -43,7 +43,8 @@ const controlSearchResults = async function () {
     await model.loadSeachResults(query);
 
     // 3) render results
-    resultsView.render(model.state.search.results);
+    // resultsView.render(model.state.search.results);
+    resultsView.render(model.getSearchResultsPage());
   } catch (err) {
     console.log(err);
   }
