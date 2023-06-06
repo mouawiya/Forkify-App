@@ -4,12 +4,16 @@ import { getJSON } from './helpers.js';
 
 export const state = {
   recipe: {},
+  search: {
+    query: '',
+    results: [],
+  },
 };
 
 // function responsible for fetching the loading recipe from the forkify API
 export const loadRecipe = async function (id) {
   try {
-    const data = await getJSON(`${API_URL}/${id}`);
+    const data = await getJSON(`${API_URL}${id}`);
 
     const { recipe } = data.data;
     state.recipe = {
@@ -22,10 +26,28 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
-    console.log(state.recipe);
   } catch (err) {
     // tempurary error handling
     console.error(`${err} 🧨🧨`);
     throw err; // we need to throw the error again to propagate it to the controller that will propagate it to the recipeView next
+  }
+};
+
+export const loadSeachResults = async function (query) {
+  try {
+    state.search.query = query;
+    const data = await getJSON(`${API_URL}?search=${query}`);
+
+    state.search.results = data.data.recipes.map(rec => {
+      return {
+        id: rec.id,
+        title: rec.title,
+        publisher: rec.publisher,
+        image: rec.image_url,
+      };
+    });
+  } catch (err) {
+    console.error(`${err} 🧨🧨`);
+    throw err; // throw the error again so we can use it in the controller
   }
 };
