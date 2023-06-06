@@ -26,5 +26,6 @@ export const loadRecipe = async function (id) {
   } catch (err) {
     // tempurary error handling
     console.error(`${err} 🧨🧨`);
+    throw err; // we need to throw the error again to propagate it to the controller that will propagate it to the recipeView next
   }
 };
