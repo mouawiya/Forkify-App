@@ -596,6 +596,8 @@ const controlRecipes = async function() {
         // guard clause for when there is no id
         if (!id) return;
         (0, _recipeViewJsDefault.default).renderSpinner();
+        // 0) update results view to mark selected search result
+        (0, _resultsViewJsDefault.default).update(_modelJs.getSearchResultsPage());
         // 1) loading recipe
         await _modelJs.loadRecipe(id); // this is an async function so it will return a promise
         // 2) Rendering recipe
@@ -632,7 +634,8 @@ const controlServings = function(newServings) {
     // update the recipe servings (in state)
     _modelJs.updateServings(newServings);
     // update the recipe view
-    (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
+    // recipeView.render(model.state.recipe);
+    (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 };
 const init = function() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipes);
@@ -2822,6 +2825,24 @@ class View {
         this._clear();
         this._parentElement.insertAdjacentHTML("afterbegin", markup);
     }
+    update(data) {
+        this._data = data;
+        const newMarkup = this._generateMarkup();
+        const newDOM = document.createRange().createContextualFragment(newMarkup); // these methods will convert the string (newMarkup) into real DOM Node objects
+        const newElements = Array.from(newDOM.querySelectorAll("*")); // select all the NEW elements AFTER we click the increase of decrease button of servings and store them in an ARRAY
+        const curElements = Array.from(this._parentElement.querySelectorAll("*")); // select all the OLD elements BEFORE we click the increase of decrease button of servings and store them in an ARRAY
+        // console.log(curElements);
+        // console.log(newElements);
+        newElements.forEach((newEl, i)=>{
+            const curEl = curElements[i];
+            // updates changed TEXT
+            if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== "") // isEqualNode returns true or false if the elements are identical
+            // the second condition make sure that elements contain text directly
+            curEl.textContent = newEl.textContent; // in case if it is false we will update the DOM where it was about to change
+            // updates changed ATTRIBUTES
+            if (!newEl.isEqualNode(curEl)) Array.from(newEl.attributes).forEach((attr)=>curEl.setAttribute(attr.name, attr.value)); // replace all the attributes in the current element by the attributes coming from the new element
+        });
+    }
     _clear() {
         this._parentElement.innerHTML = ""; // emptying out the container before adding the new elements to it
     }
@@ -3196,9 +3217,10 @@ class ResultsView extends (0, _viewJsDefault.default) {
         return this._data.map(this._generateMarkupPreview).join("");
     }
     _generateMarkupPreview(result) {
+        const id = window.location.hash.slice(1);
         return `
         <li class="preview">
-            <a class="preview__link " href="#${result.id}">
+            <a class="preview__link ${result.id === id ? "preview__link--active" : ""}" href="#${result.id}">
                 <figure class="preview__fig">
                     <img src="${result.image}" alt="${result.title}" />
                 </figure>

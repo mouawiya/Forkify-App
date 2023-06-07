@@ -6,13 +6,37 @@ export default class View {
   _data;
 
   render(data) {
-    if (!data || (Array.isArray(data) && data.length === 0))
-      return this.renderError();
+    if (!data || (Array.isArray(data) && data.length === 0)) return this.renderError();
 
     this._data = data;
     const markup = this._generateMarkup();
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+  update(data) {
+    this._data = data;
+    const newMarkup = this._generateMarkup();
+
+    const newDOM = document.createRange().createContextualFragment(newMarkup); // these methods will convert the string (newMarkup) into real DOM Node objects
+    const newElements = Array.from(newDOM.querySelectorAll('*')); // select all the NEW elements AFTER we click the increase of decrease button of servings and store them in an ARRAY
+    const curElements = Array.from(this._parentElement.querySelectorAll('*')); // select all the OLD elements BEFORE we click the increase of decrease button of servings and store them in an ARRAY
+    // console.log(curElements);
+    // console.log(newElements);
+
+    newElements.forEach((newEl, i) => {
+      const curEl = curElements[i];
+
+      // updates changed TEXT
+      if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== '') {
+        // isEqualNode returns true or false if the elements are identical
+        // the second condition make sure that elements contain text directly
+        curEl.textContent = newEl.textContent; // in case if it is false we will update the DOM where it was about to change
+      }
+
+      // updates changed ATTRIBUTES
+      if (!newEl.isEqualNode(curEl)) Array.from(newEl.attributes).forEach(attr => curEl.setAttribute(attr.name, attr.value)); // replace all the attributes in the current element by the attributes coming from the new element
+    });
   }
 
   _clear() {
